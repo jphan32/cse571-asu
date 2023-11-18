@@ -29,15 +29,16 @@ def train_model(no_epochs, test_name="test", random_seed=32):
 
     batch_size = 128
     learning_rate = 0.001
-    early_stopping_patience = 5 
-    min_test_loss = float('inf')
+    
+    best_accuracy = 0.0
     epochs_no_improve = 0
+    early_stopping_patience = 10
 
     data_loaders = Data_Loaders(batch_size)
     model = Action_Conditioned_FF().to(device)
 
-    loss_function = nn.BCELoss()
-    optimizer = optim.Adam(model.parameters(), lr=learning_rate)
+    loss_function = nn.BCEWithLogitsLoss()
+    optimizer = optim.Adam(model.parameters(), lr=learning_rate, weight_decay=1e-5)
 
     wandb.init( entity="jphan32",
                 project="CSE-571",
@@ -57,6 +58,8 @@ def train_model(no_epochs, test_name="test", random_seed=32):
     for epoch_i in tqdm(range(no_epochs)):
         model.train()
         total_train_loss = 0.0
+        correct = 0
+        total = 0
         for idx, sample in enumerate(data_loaders.train_loader):
             inputs = sample['input'].to(device)
             labels = sample['label'].to(device)
@@ -67,14 +70,41 @@ def train_model(no_epochs, test_name="test", random_seed=32):
             total_train_loss += loss.item()
             loss.backward()
             optimizer.step()
+
+            predicted = (outputs > 0.5).float()
+            total += labels.size(0)
+            correct += (predicted == labels).sum().item()
         average_train_loss = total_train_loss / len(data_loaders.train_loader)
+        accuracy_train = correct / total
 
-        average_test_loss = model.evaluate(model, data_loaders.test_loader, loss_function)
+        model.eval()
+        total_test_loss = 0.0
+        correct = 0
+        total = 0
+        with torch.no_grad():
+            for data in data_loaders.test_loader:
+                inputs = data['input'].to(device)
+                labels = data['label'].to(device)
+                outputs = model(inputs)
 
-        wandb.log({"average_train_loss": average_train_loss, "average_test_loss": average_test_loss})
+                loss = loss_function(outputs, labels)
+                total_test_loss += loss.item()
 
-        if average_test_loss < min_test_loss:
-            min_test_loss = average_test_loss
+                predicted = (outputs > 0.5).float()
+                total += labels.size(0)
+                correct += (predicted == labels).sum().item()
+        
+        average_test_loss = total_test_loss / len(data_loaders.test_loader)
+        accuracy_test = correct / total
+
+        wandb.log({"average_train_loss": average_train_loss,
+                   "average_test_loss": average_test_loss,
+                   "accuracy_train": accuracy_train,
+                   "accuracy_test": accuracy_test,
+                   })
+
+        if accuracy_test > best_accuracy:
+            best_accuracy = accuracy_test
             epochs_no_improve = 0
             torch.save(model.state_dict(), 'saved/best_model.pkl')
         else:

@@ -26,7 +26,7 @@ class Action_Conditioned_FF(nn.Module):
         x = self.dropout1(x)
         x = F.relu(self.bn3(self.fc3(x)))
         x = self.dropout2(x)
-        output = F.sigmoid(self.fc4(x))
+        output = self.fc4(x)
         return output.squeeze()
 
     def evaluate(self, model, test_loader, loss_function):

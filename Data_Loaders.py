@@ -10,7 +10,7 @@ from sklearn.model_selection import train_test_split
 class Nav_Dataset(dataset.Dataset):
     def __init__(self):
         self.data = np.genfromtxt('saved/training_data.csv', delimiter=',')
-        #self.data = np.unique(self.data, axis=0)
+        self.data = np.unique(self.data, axis=0)
 
         # normalize data and save scaler for inference
         self.scaler = MinMaxScaler()
