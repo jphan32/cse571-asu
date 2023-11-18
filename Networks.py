@@ -18,6 +18,9 @@ class Action_Conditioned_FF(nn.Module):
         self.fc4 = nn.Linear(64, 1)
 
     def forward(self, input):
+        if input.dim() == 1:
+            input = input.unsqueeze(0)
+        
         x = F.relu(self.bn1(self.fc1(input)))
         x = F.relu(self.bn2(self.fc2(x)))
         x = self.dropout1(x)
