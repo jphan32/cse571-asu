@@ -16,13 +16,9 @@ class Action_Conditioned_FF(nn.Module):
         self.bn2 = nn.BatchNorm1d(128)
         self.dropout2 = nn.Dropout(0.5)
 
-        #self.fc3 = nn.Linear(128, 256)
-        #self.bn3 = nn.BatchNorm1d(256)
-        #self.dropout3 = nn.Dropout(0.5)
-
-        self.fc4 = nn.Linear(128, 64)
-        self.bn4 = nn.BatchNorm1d(64)
-        self.dropout4 = nn.Dropout(0.5)
+        self.fc3 = nn.Linear(128, 64)
+        self.bn3 = nn.BatchNorm1d(64)
+        self.dropout3 = nn.Dropout(0.5)
 
         self.fc_out = nn.Linear(64, 1)
 
@@ -36,17 +32,17 @@ class Action_Conditioned_FF(nn.Module):
         if input.dim() == 1:
             input = input.unsqueeze(0)
         
-        x = F.relu(self.bn1(self.fc1(input)))
+        #x = F.relu(self.bn1(self.fc1(input)))
+        x = F.relu(self.fc1(input))
         #x = self.dropout1(x)
 
-        x = F.relu(self.bn2(self.fc2(x)))
+        #x = F.relu(self.bn2(self.fc2(x)))
+        x = F.relu(self.fc2(x))
         x = self.dropout2(x)
 
         #x = F.relu(self.bn3(self.fc3(x)))
-        #x = self.dropout3(x)
-
-        x = F.relu(self.bn4(self.fc4(x)))
-        x = self.dropout4(x)
+        x = F.relu(self.fc3(x))
+        x = self.dropout3(x)
 
         output = self.fc_out(x)
         return output.squeeze()
