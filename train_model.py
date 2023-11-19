@@ -112,7 +112,7 @@ def train_model(no_epochs, test_name="test", random_seed=32):
             epochs_no_improve += 1
             if epochs_no_improve == early_stopping_patience:
                 print(f'Early Stopping : {epoch_i} epoch')
-                break
+                #break
 
     #torch.save(model.state_dict(), 'saved/saved_model.pkl')
     wandb.finish()
