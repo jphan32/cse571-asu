@@ -39,7 +39,8 @@ def train_model(no_epochs, test_name="test", random_seed=32):
     data_loaders = Data_Loaders(batch_size)
     model = Action_Conditioned_FF().to(device)
 
-    loss_function = nn.BCEWithLogitsLoss()
+    #loss_function = nn.BCEWithLogitsLoss()
+    loss_function = nn.BCELoss()
     optimizer = optim.Adam(model.parameters(), lr=learning_rate, weight_decay=1e-5)
     #optimizer = optim.SGD(model.parameters(), lr=0.01, momentum=0.9)
     #scheduler = StepLR(optimizer, step_size=30, gamma=0.1) 

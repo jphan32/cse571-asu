@@ -54,7 +54,7 @@ class Action_Conditioned_combined_FF(nn.Module):
         combined_data = F.relu(self.combined_bn2(self.combined_fc2(combined_data)))
         combined_data = self.combined_dropout2(combined_data)
 
-        output = self.fc_out(combined_data)
+        output = torch.sigmoid(self.fc_out(combined_data))
         return output.squeeze()
 
     def evaluate(self, model, test_loader, loss_function):
