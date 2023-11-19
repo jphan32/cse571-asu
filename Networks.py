@@ -3,7 +3,7 @@ import torch.nn as nn
 import torch.nn.init as init
 import torch.nn.functional as F
 
-class Action_Conditioned_FF(nn.Module):
+class Action_Conditioned_combined_FF(nn.Module):
     def __init__(self):
         super(Action_Conditioned_FF, self).__init__()
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -75,7 +75,7 @@ class Action_Conditioned_FF(nn.Module):
         return average_loss
 
 
-class Action_Conditioned_FF_(nn.Module):
+class Action_Conditioned_FF(nn.Module):
     def __init__(self):
         super(Action_Conditioned_FF, self).__init__()
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
