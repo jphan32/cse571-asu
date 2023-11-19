@@ -32,16 +32,16 @@ class Action_Conditioned_FF(nn.Module):
         if input.dim() == 1:
             input = input.unsqueeze(0)
         
-        #x = F.relu(self.bn1(self.fc1(input)))
-        x = F.relu(self.fc1(input))
-        #x = self.dropout1(x)
+        x = F.gelu(self.bn1(self.fc1(input)))
+        #x = F.relu(self.fc1(input))
+        x = self.dropout1(x)
 
-        #x = F.relu(self.bn2(self.fc2(x)))
-        x = F.relu(self.fc2(x))
+        x = F.gelu(self.bn2(self.fc2(x)))
+        #x = F.relu(self.fc2(x))
         x = self.dropout2(x)
 
-        #x = F.relu(self.bn3(self.fc3(x)))
-        x = F.relu(self.fc3(x))
+        x = F.gelu(self.bn3(self.fc3(x)))
+        #x = F.relu(self.fc3(x))
         x = self.dropout3(x)
 
         output = self.fc_out(x)
