@@ -16,13 +16,17 @@ class Action_Conditioned_FF(nn.Module):
         self.sensor_bn2 = nn.BatchNorm1d(128)
         self.sensor_dropout2 = nn.Dropout(0.5)
 
-        self.action_fc1 = nn.Linear(1, 32)
+        self.action_fc1 = nn.Linear(1, 16)
 
-        self.combined_fc1 = nn.Linear(128 + 32, 64)
+        self.combined_fc1 = nn.Linear(128 + 16, 64)
         self.combined_bn1 = nn.BatchNorm1d(64)
         self.combined_dropout1 = nn.Dropout(0.5)
 
-        self.fc_out = nn.Linear(64, 1)
+        self.combined_fc2 = nn.Linear(64, 32)
+        self.combined_bn2 = nn.BatchNorm1d(32)
+        self.combined_dropout2 = nn.Dropout(0.5)
+
+        self.fc_out = nn.Linear(32, 1)
 
         for m in self.modules():
             if isinstance(m, nn.Linear):
@@ -47,6 +51,9 @@ class Action_Conditioned_FF(nn.Module):
         combined_data = torch.cat((sensor_data, action_data), dim=1)
         combined_data = F.relu(self.combined_bn1(self.combined_fc1(combined_data)))
         combined_data = self.combined_dropout1(combined_data)
+
+        combined_data = F.relu(self.combined_bn2(self.combined_fc2(combined_data)))
+        combined_data = self.combined_dropout2(combined_data)
 
         output = self.fc_out(combined_data)
         return output.squeeze()

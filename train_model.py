@@ -4,6 +4,7 @@ from Networks import Action_Conditioned_FF
 import torch
 import torch.nn as nn
 import torch.optim as optim
+from torch.optim.lr_scheduler import StepLR
 
 from tqdm import tqdm
 
@@ -30,6 +31,7 @@ def train_model(no_epochs, test_name="test", random_seed=32):
     batch_size = 128
     learning_rate = 0.001
     
+    min_test_loss = float('inf')
     best_accuracy = 0.0
     epochs_no_improve = 0
     early_stopping_patience = 10
@@ -39,6 +41,8 @@ def train_model(no_epochs, test_name="test", random_seed=32):
 
     loss_function = nn.BCEWithLogitsLoss()
     optimizer = optim.Adam(model.parameters(), lr=learning_rate, weight_decay=1e-5)
+    #optimizer = optim.SGD(model.parameters(), lr=0.01, momentum=0.9)
+    #scheduler = StepLR(optimizer, step_size=30, gamma=0.1) 
 
     wandb.init( entity="jphan32",
                 project="CSE-571",
@@ -50,10 +54,6 @@ def train_model(no_epochs, test_name="test", random_seed=32):
                     "epochs": no_epochs,
                     "seed": random_seed
                 })
-
-    losses = []
-    min_loss = model.evaluate(model, data_loaders.test_loader, loss_function)
-    losses.append(min_loss)
 
     for epoch_i in tqdm(range(no_epochs)):
         model.train()
@@ -74,6 +74,7 @@ def train_model(no_epochs, test_name="test", random_seed=32):
             predicted = (outputs > 0.5).float()
             total += labels.size(0)
             correct += (predicted == labels).sum().item()
+        #scheduler.step()
         average_train_loss = total_train_loss / len(data_loaders.train_loader)
         accuracy_train = correct / total
 
@@ -103,8 +104,10 @@ def train_model(no_epochs, test_name="test", random_seed=32):
                    "accuracy_test": accuracy_test,
                    })
 
-        if accuracy_test > best_accuracy:
-            best_accuracy = accuracy_test
+        if average_test_loss < min_test_loss:
+            min_test_loss = average_test_loss
+        #if accuracy_test > best_accuracy:
+        #    best_accuracy = accuracy_test
             epochs_no_improve = 0
             #torch.save(model.state_dict(), 'saved/best_model.pkl')
             torch.save(model.state_dict(), 'saved/saved_model.pkl')
@@ -112,7 +115,7 @@ def train_model(no_epochs, test_name="test", random_seed=32):
             epochs_no_improve += 1
             if epochs_no_improve == early_stopping_patience:
                 print(f'Early Stopping : {epoch_i} epoch')
-                #break
+                break
 
     #torch.save(model.state_dict(), 'saved/saved_model.pkl')
     wandb.finish()
