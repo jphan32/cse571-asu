@@ -111,7 +111,7 @@ class Action_Conditioned_FF(nn.Module):
         x = F.relu(self.bn3(self.fc3(x)))
         x = self.dropout3(x)
 
-        output = self.fc_out(x)
+        output = torch.sigmoid(self.fc_out(x))
         return output.squeeze()
 
     def evaluate(self, model, test_loader, loss_function):
