@@ -8,17 +8,19 @@ class Action_Conditioned_FF(nn.Module):
         super(Action_Conditioned_FF, self).__init__()
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-        self.fc1 = nn.Linear(6, 64)
-        self.bn1 = nn.BatchNorm1d(64)
-        self.dropout1 = nn.Dropout(0.5)
+        self.sensor_fc1 = nn.Linear(5, 64)
+        self.sensor_bn1 = nn.BatchNorm1d(64)
+        self.sensor_dropout1 = nn.Dropout(0.5)
 
-        self.fc2 = nn.Linear(64, 128)
-        self.bn2 = nn.BatchNorm1d(128)
-        self.dropout2 = nn.Dropout(0.5)
+        self.sensor_fc2 = nn.Linear(64, 128)
+        self.sensor_bn2 = nn.BatchNorm1d(128)
+        self.sensor_dropout2 = nn.Dropout(0.5)
 
-        self.fc3 = nn.Linear(128, 64)
-        self.bn3 = nn.BatchNorm1d(64)
-        self.dropout3 = nn.Dropout(0.5)
+        self.action_fc1 = nn.Linear(1, 32)
+
+        self.combined_fc1 = nn.Linear(128 + 32, 64)
+        self.combined_bn1 = nn.BatchNorm1d(64)
+        self.combined_dropout1 = nn.Dropout(0.5)
 
         self.fc_out = nn.Linear(64, 1)
 
@@ -32,16 +34,21 @@ class Action_Conditioned_FF(nn.Module):
         if input.dim() == 1:
             input = input.unsqueeze(0)
         
-        x = F.relu(self.bn1(self.fc1(input)))
-        #x = self.dropout1(x)
+        sensor_data = input[:, 0:5]
+        action_data = input[:, 5].unsqueeze(1)
 
-        x = F.relu(self.bn2(self.fc2(x)))
-        x = self.dropout2(x)
+        sensor_data = F.relu(self.sensor_bn1(self.sensor_fc1(sensor_data)))
+        sensor_data = self.sensor_dropout1(sensor_data)
+        sensor_data = F.relu(self.sensor_bn2(self.sensor_fc2(sensor_data)))
+        sensor_data = self.sensor_dropout2(sensor_data)
 
-        x = F.relu(self.bn3(self.fc3(x)))
-        x = self.dropout3(x)
+        action_data = F.relu(self.action_fc1(action_data))
 
-        output = self.fc_out(x)
+        combined_data = torch.cat((sensor_data, action_data), dim=1)
+        combined_data = F.relu(self.combined_bn1(self.combined_fc1(combined_data)))
+        combined_data = self.combined_dropout1(combined_data)
+
+        output = self.fc_out(combined_data)
         return output.squeeze()
 
     def evaluate(self, model, test_loader, loss_function):
