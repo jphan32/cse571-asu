@@ -106,14 +106,15 @@ def train_model(no_epochs, test_name="test", random_seed=32):
         if accuracy_test > best_accuracy:
             best_accuracy = accuracy_test
             epochs_no_improve = 0
-            torch.save(model.state_dict(), 'saved/best_model.pkl')
+            #torch.save(model.state_dict(), 'saved/best_model.pkl')
+            torch.save(model.state_dict(), 'saved/saved_model.pkl')
         else:
             epochs_no_improve += 1
             if epochs_no_improve == early_stopping_patience:
                 print(f'Early Stopping : {epoch_i} epoch')
                 break
 
-    torch.save(model.state_dict(), 'saved/saved_model.pkl')
+    #torch.save(model.state_dict(), 'saved/saved_model.pkl')
     wandb.finish()
 
 

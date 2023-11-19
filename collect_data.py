@@ -48,5 +48,5 @@ def collect_training_data(total_actions):
     df.to_csv('submission.csv', index=False, header=False)
 
 if __name__ == '__main__':
-    total_actions = 100
+    total_actions = 300000
     collect_training_data(total_actions)
